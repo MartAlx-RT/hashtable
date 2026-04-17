@@ -1,0 +1,48 @@
+#ifndef TABLE_H
+#define TABLE_H
+
+#include <stddef.h>
+#include <stdio.h>
+#include <malloc.h>
+#include <assert.h>
+#include <stdint.h>
+#include <string.h>
+#include <errno.h>
+
+//static const size_t MAX_S_LEN = 64;
+#define MAX_S_LEN 64
+static const uint64_t UNDEF = (uint64_t)-1; 
+
+typedef size_t tbl_data_t;
+
+typedef char tbl_key_t[MAX_S_LEN];
+
+typedef struct tbl_cell_t
+{
+	tbl_key_t *keys;
+	tbl_data_t *data;
+	uint64_t *next;
+	uint64_t tail;		// head always = 0
+	uint64_t free;
+	size_t size, capacity;
+} tbl_cell_t;
+
+typedef struct tbl_t
+{
+	tbl_cell_t *cells;
+	const size_t size;
+} tbl_t;
+
+uint64_t tbl_hash(const tbl_key_t key, const uint64_t max_hash);
+void tbl_init(tbl_t *tbl, const size_t cell_capacity);
+void cell_init(tbl_cell_t *cell, const size_t cell_capacity);
+void cell_realloc(tbl_cell_t *cell);
+void tbl_add(const tbl_key_t key, tbl_t *tbl);
+uint64_t cell_find(const tbl_key_t key, tbl_cell_t *cell);
+void tbl_deinit(tbl_t *tbl);
+void tbl_del(const tbl_key_t key, tbl_t *tbl);
+tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl);
+
+void cell_dump(tbl_cell_t *cell, FILE *f);
+void tbl_dump(tbl_t *tbl, FILE *f);
+#endif /*TABLE_H*/
