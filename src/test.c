@@ -23,14 +23,14 @@ typedef enum test_mode_t
 	MODE_HELP = '\n',
 } test_mode_t;
 
-const size_t TBL_SIZE = 4999;
+const size_t TBL_SIZE = 499;
 const size_t CELL_INIT_SIZE = 100;
 
-#define ERR(func)	do { perror(func); return 0; } while(0)
+#define ERR(func)	do { perror(func); return 1; } while(0)
 const char *strcpy_64(tbl_key_t dst, const char *src, const char *eof);	// compare 64-ltrs words
 size_t load_db(const char *f, const char *eof, tbl_t *tbl, tbl_key_t *added_keys[]);
 void test(tbl_key_t keys[], size_t n_keys, tbl_t *tbl);	// auto-test (searching all words in file)
-void tui(tbl_t *tbl);							// tui for manually testing
+void tui(tbl_t *tbl);					// tui for manually testing
 
 int main(int argc, char *argv[])
 {

@@ -1,11 +1,10 @@
 #include "table.h"
-#include <stdint.h>
 
 #define ROL64(x, s)	(uint64_t)((x << (s)) | (x >> (64-s)))
 
-uint64_t tbl_hash(const tbl_key_t key, const uint64_t max_hash) // table size 
+tbl_hash_t tbl_hash(const tbl_key_t key) // table size 
 {
-	uint64_t hash = key[0];
+	tbl_hash_t hash = key[0];
 
 	size_t i = 1;
 	while(key[i])
@@ -15,5 +14,5 @@ uint64_t tbl_hash(const tbl_key_t key, const uint64_t max_hash) // table size
 		i++;
 	}
 
-	return hash % max_hash;		// TODO use full hash
+	return hash;
 }
