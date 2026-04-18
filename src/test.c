@@ -35,7 +35,8 @@ void tui(tbl_t *tbl);					// tui for manually testing
 
 int main(int argc, char *argv[])
 {
-	int fd = open("biblia.txt", O_RDONLY);
+	// opening
+	int fd = open("test.txt", O_RDONLY);
 	if(fd < 0)	ERR("open");
 
 	struct stat finfo = {};	fstat(fd, &finfo);
@@ -45,10 +46,19 @@ int main(int argc, char *argv[])
 	tbl_t tbl = { .size=TBL_SIZE };
 	tbl_init(&tbl, CELL_INIT_SIZE);
 
+	// loading database
 	tbl_key_t *added_keys = NULL;
-	size_t n_added_keys = load_db(f, f+finfo.st_size, &tbl, &added_keys);
-	printf("elements in table: %lu\nload factor: %lg\n", tbl_cnt_elems(&tbl), tbl_get_ldfactor(&tbl));
+	size_t n_added_keys = load_db(f, f+finfo.st_size+1, &tbl, &added_keys);
+	printf("elements in table: %lu\nload factor: %lg\n",
+			tbl_cnt_elems(&tbl), tbl_get_ldfactor(&tbl));
 
+	// dumping distribution elements in cells
+	FILE *dump_distr = fopen("distr", "w");	assert(dump_distr);
+	for(size_t i=0; i < tbl.size; i++)
+		fprintf(dump_distr, "%lu\n", tbl.cells[i].size);
+	fclose(dump_distr);	dump_distr = NULL;
+
+	// testing
 	if(argc == 2 && !strcmp(argv[1], "--tui"))	tui(&tbl);
 	else
 	{
@@ -59,6 +69,7 @@ int main(int argc, char *argv[])
 		printf("testing finished: %lu clocks\n", time);
 	}
 
+	// deinit
 	tbl_deinit(&tbl);
 	free(added_keys);
 	if(munmap((void *)f, finfo.st_size))	ERR("munmap");
@@ -77,7 +88,6 @@ size_t load_db(const char *f, const char *eof, tbl_t *tbl, tbl_key_t *added_keys
 	while((f = strcpy_64(key, f, eof)))
 	{
 		tbl_add(key, tbl);
-		//fprintf(stderr, "{%s}\n", key);
 
 		strcpy((*added_keys)[n_keys], key);
 
@@ -96,12 +106,11 @@ const char *strcpy_64(tbl_key_t dst, const char *src, const char *eof)
 {
 	assert(dst);	assert(src);	assert(eof);
 
-	const char *const src_beg = src;
-
 	while(src < eof && !isalnum(*src))
 		src++;
 	if(src >= eof)	return NULL;
 
+	const char *const src_beg = src;
 	while(src-src_beg < MAX_S_LEN-1 && isalnum(*src) && src < eof)
 		*dst++ = *src++;
 	*dst = '\0';
