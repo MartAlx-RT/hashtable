@@ -6,7 +6,7 @@ tbl_hash_t tbl_hash(const tbl_key_t key) // table size
 {
 	assert(key);
 
-	tbl_hash_t hash = key[0];
+	tbl_hash_t hash = (uint8_t)key[0];
 
 	size_t i = 1;
 	while(key[i])

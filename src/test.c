@@ -25,6 +25,7 @@ typedef enum test_mode_t
 
 const size_t TBL_SIZE = 4999;
 const size_t CELL_INIT_SIZE = 100;
+const size_t N_CYCLES = 100;
 
 #define ERR(func)	do { perror(func); return 1; } while(0)
 const char *strcpy_64(tbl_key_t dst, const char *src, const char *eof);	// compare 64-ltrs words
@@ -52,7 +53,8 @@ int main(int argc, char *argv[])
 	else
 	{
 		uint64_t time = __rdtsc();
-		test(added_keys, n_added_keys, &tbl);
+		for(size_t i=0; i<N_CYCLES; i++)
+			test(added_keys, n_added_keys, &tbl);
 		time = __rdtsc()-time;
 		printf("testing finished: %lu clocks\n", time);
 	}
@@ -75,7 +77,7 @@ size_t load_db(const char *f, const char *eof, tbl_t *tbl, tbl_key_t *added_keys
 	while((f = strcpy_64(key, f, eof)))
 	{
 		tbl_add(key, tbl);
-		fprintf(stderr, "{%s}\n", key);
+		//fprintf(stderr, "{%s}\n", key);
 
 		strcpy((*added_keys)[n_keys], key);
 
