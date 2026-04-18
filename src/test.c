@@ -23,7 +23,7 @@ typedef enum test_mode_t
 	MODE_HELP = '\n',
 } test_mode_t;
 
-const size_t TBL_SIZE = 499;
+const size_t TBL_SIZE = 4999;
 const size_t CELL_INIT_SIZE = 100;
 
 #define ERR(func)	do { perror(func); return 1; } while(0)
@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 
 	tbl_key_t *added_keys = NULL;
 	size_t n_added_keys = load_db(f, f+finfo.st_size, &tbl, &added_keys);
+	printf("elements in table: %lu\nload factor: %lg\n", tbl_cnt_elems(&tbl), tbl_get_ldfactor(&tbl));
 
 	if(argc == 2 && !strcmp(argv[1], "--tui"))	tui(&tbl);
 	else
@@ -57,6 +58,7 @@ int main(int argc, char *argv[])
 	}
 
 	tbl_deinit(&tbl);
+	free(added_keys);
 	if(munmap((void *)f, finfo.st_size))	ERR("munmap");
 	return 0;
 }
@@ -70,10 +72,10 @@ size_t load_db(const char *f, const char *eof, tbl_t *tbl, tbl_key_t *added_keys
 	*added_keys = (tbl_key_t *)calloc(added_keys_capacity, sizeof(tbl_key_t));
 	assert(*added_keys);
 
-	while(f)
+	while((f = strcpy_64(key, f, eof)))
 	{
-		f = strcpy_64(key, f, eof);
 		tbl_add(key, tbl);
+		fprintf(stderr, "{%s}\n", key);
 
 		strcpy((*added_keys)[n_keys], key);
 
@@ -94,7 +96,11 @@ const char *strcpy_64(tbl_key_t dst, const char *src, const char *eof)
 
 	const char *const src_beg = src;
 
-	while(src-src_beg < MAX_S_LEN-1 && !isspace(*src) && src < eof)
+	while(src < eof && !isalnum(*src))
+		src++;
+	if(src >= eof)	return NULL;
+
+	while(src-src_beg < MAX_S_LEN-1 && isalnum(*src) && src < eof)
 		*dst++ = *src++;
 	*dst = '\0';
 

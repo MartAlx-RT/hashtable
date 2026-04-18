@@ -44,6 +44,8 @@ uint64_t cell_find(const tbl_key_t key, tbl_cell_t *cell);
 void tbl_deinit(tbl_t *tbl);
 void tbl_del(const tbl_key_t key, tbl_t *tbl);
 tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl);
+size_t tbl_cnt_elems(tbl_t *tbl);
+double tbl_get_ldfactor(tbl_t *tbl);
 
 void cell_dump(tbl_cell_t *cell, FILE *f);
 void tbl_dump(tbl_t *tbl, FILE *f);

@@ -8,7 +8,7 @@ HASH_FUNC ?= const_hash.c
 FILES = test.c table.c
 
 CFLAGS = -Wall -Wextra -Wpedantic -g -march=native
-DEBUG_FLAGS = -fsanitize=address,leak -O0
+DEBUG_FLAGS = -fsanitize=address,leak -O0 -g
 CFLAGS += $(INC)
 DEBUG_FLAGS += $(INC)
 

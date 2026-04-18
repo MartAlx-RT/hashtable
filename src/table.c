@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -86,6 +87,7 @@ void tbl_add(const tbl_key_t key, tbl_t *tbl)
 	if(++cell->size >= cell->capacity)	cell_realloc(cell);
 
 	added = cell->free;
+	cell->free = cell->next[added];
 
 	strncpy(cell->keys[added], key, MAX_S_LEN);
 	cell->hashes[added] = hash;
@@ -94,7 +96,6 @@ void tbl_add(const tbl_key_t key, tbl_t *tbl)
 
 	cell->next[cell->tail] = added;
 	cell->tail = added;
-	cell->free = cell->next[added];
 }
 
 void tbl_del(const tbl_key_t key, tbl_t *tbl)
@@ -114,6 +115,7 @@ void tbl_del(const tbl_key_t key, tbl_t *tbl)
 		{
 			cell->next[previous] = cell->next[deleted];
 			cell->next[deleted] = cell->free;
+			cell->size--;
 			cell->free = deleted;
 
 			return;
@@ -142,6 +144,28 @@ tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl)
 
 	errno = ENOKEY;
 	return UNDEF;
+}
+
+size_t tbl_cnt_elems(tbl_t *tbl)
+{
+	assert(tbl);
+
+	size_t n_elems = 0;
+
+	for(size_t i=0; i < tbl->size; i++)
+	{
+		n_elems += tbl->cells[i].size;
+		//fprintf(stderr, "%lu\n", tbl->cells[i].size);
+	}
+
+	return n_elems;
+}
+
+double tbl_get_ldfactor(tbl_t *tbl)
+{
+	assert(tbl);
+
+	return (double)tbl_cnt_elems(tbl)/tbl->size;
 }
 
 void tbl_deinit(tbl_t *tbl)
