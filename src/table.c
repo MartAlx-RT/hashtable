@@ -1,17 +1,19 @@
 #include "table.h"
-#include <asm-generic/errno.h>
-#include <errno.h>
-#include <assert.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-void tbl_init(tbl_t *tbl, const size_t cell_capacity)
+static void cell_init(tbl_cell_t *cell, const size_t cell_capacity);
+static void cell_realloc(tbl_cell_t *cell);
+
+void tbl_init(const size_t tbl_size, const size_t cell_capacity, tbl_t *tbl)
 {
 	assert(tbl);
 
+	if(tbl_size == 0)
+	{
+		errno = EINVAL;	fprintf(stderr, "init table with 0 size\n");
+		return;
+	}
+
+	tbl->size = tbl_size;
 	tbl->cells = (tbl_cell_t *)calloc(tbl->size, sizeof(tbl_cell_t));
 	assert(tbl->cells);
 
@@ -19,7 +21,7 @@ void tbl_init(tbl_t *tbl, const size_t cell_capacity)
 		cell_init(&(tbl->cells[i]), cell_capacity);
 }
 
-void cell_init(tbl_cell_t *cell, const size_t cell_capacity)
+static void cell_init(tbl_cell_t *cell, const size_t cell_capacity)
 {
 	assert(cell);
 
@@ -40,7 +42,7 @@ void cell_init(tbl_cell_t *cell, const size_t cell_capacity)
 	cell->capacity = cell_capacity;
 }
 
-void cell_realloc(tbl_cell_t *cell)
+static void cell_realloc(tbl_cell_t *cell)
 {
 	assert(cell);
 
@@ -65,7 +67,6 @@ void tbl_add(const tbl_key_t key, tbl_t *tbl)
 	assert(tbl);
 
 	tbl_hash_t hash = tbl_hash(key);
-	//fprintf(stderr, "%lu\n", hash % tbl->size);
 	tbl_cell_t *cell = &(tbl->cells[hash % tbl->size]);
 	uint64_t added = 0;
 
@@ -146,26 +147,22 @@ tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl)
 	return UNDEF;
 }
 
-size_t tbl_cnt_elems(tbl_t *tbl)
+size_t tbl_get_size(tbl_t *tbl)
 {
 	assert(tbl);
-
-	size_t n_elems = 0;
-
-	for(size_t i=0; i < tbl->size; i++)
-	{
-		n_elems += tbl->cells[i].size;
-		//fprintf(stderr, "%lu\n", tbl->cells[i].size);
-	}
-
-	return n_elems;
+	return tbl->size;
 }
 
 double tbl_get_ldfactor(tbl_t *tbl)
 {
 	assert(tbl);
 
-	return (double)tbl_cnt_elems(tbl)/tbl->size;
+	size_t n_elems = 0;
+
+	for(size_t i=0; i < tbl->size; i++)
+		n_elems += tbl->cells[i].size;
+
+	return (double)n_elems/tbl->size;
 }
 
 void tbl_deinit(tbl_t *tbl)

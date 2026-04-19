@@ -1,18 +1,8 @@
 #include "table.h"
-#include <asm-generic/errno.h>
-#include <assert.h>
 #include <fcntl.h>
-#include <malloc.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <ctype.h>
-#include <sys/types.h>
-#include <valgrind/callgrind.h>
-#include <x86intrin.h>
 
 typedef enum test_mode_t
 {
@@ -43,14 +33,13 @@ int main(int argc, char *argv[])
 	const char *f = (const char *)mmap(NULL, finfo.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if(f == NULL)	ERR("mmap");
 
-	tbl_t tbl = { .size=TBL_SIZE };
-	tbl_init(&tbl, CELL_INIT_SIZE);
+	tbl_t tbl = {};
+	tbl_init(TBL_SIZE, CELL_INIT_SIZE, &tbl);
 
 	// loading database
 	tbl_key_t *added_keys = NULL;
 	size_t n_added_keys = load_db(f, f+finfo.st_size+1, &tbl, &added_keys);
-	printf("elements in table: %lu\nload factor: %lg\n",
-			tbl_cnt_elems(&tbl), tbl_get_ldfactor(&tbl));
+	printf("load factor: %lg\n", tbl_get_ldfactor(&tbl));
 
 	// dumping distribution elements in cells
 	FILE *dump_distr = fopen("distr.csv", "w");	assert(dump_distr);
@@ -59,7 +48,7 @@ int main(int argc, char *argv[])
 	fclose(dump_distr);	dump_distr = NULL;
 
 	// testing
-	if(argc == 2 && !strcmp(argv[1], "--tui"))	tui(&tbl);
+	if(argc == 2 && !strcmp(argv[1], "--cli"))	tui(&tbl);
 	else
 	{
 		uint64_t time = __rdtsc();

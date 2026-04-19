@@ -10,7 +10,7 @@ OUTPUT ?= a.out
 FILES = test.c table.c
 FILES += $(HASH_FUNC)
 
-CFLAGS = -Wall -Wextra -Wpedantic -g -march=native
+CFLAGS = -Wall -Wextra -Wpedantic -g -march=native -DNDEBUG
 DEBUG_FLAGS = -fsanitize=address,leak -O0 -g
 CFLAGS += $(INC)
 DEBUG_FLAGS += $(INC)
