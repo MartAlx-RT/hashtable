@@ -1,14 +1,13 @@
 .PHONY : all clean release debug
 INC = -Iinclude
-VPATH = src
 
 CC ?= gcc
 
-HASH_FUNC ?= const_hash.c
+HASH_FUNC ?= src/const_hash.c
+TEST_FILE ?= test/test.c
 OUTPUT ?= a.out
 
-FILES = test.c table.c
-FILES += $(HASH_FUNC)
+FILES = src/table.c $(HASH_FUNC) $(TEST_FILE)
 
 CFLAGS = -Wall -Wextra -Wpedantic -g -march=native -DNDEBUG
 DEBUG_FLAGS = -fsanitize=address,leak -O0 -g
