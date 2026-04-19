@@ -10,17 +10,16 @@ tbl_hash_t tbl_hash(const tbl_key_t key)
 	size_t i = 0;
 	while(key[i])
 	{
-		hash ^= (uint8_t)key[i];
+		hash ^= key[i];
 
-		if(hash & 1)
+		for (size_t k = 0; k < 8; k++)
 		{
-			hash >>= 1;
-			hash ^= 0xEDB88320;
+			if(hash & 1)	hash = (hash >> 1) ^ 0xEDB88320;
+			else		hash >>= 1;
 		}
-		else	hash >>= 1;
 
 		i++;
 	}
 
-	return hash;
+	return ~hash;
 }

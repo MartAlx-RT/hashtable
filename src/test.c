@@ -23,9 +23,9 @@ typedef enum test_mode_t
 	MODE_HELP = '\n',
 } test_mode_t;
 
-const size_t TBL_SIZE = 4999;
+const size_t TBL_SIZE = 3999;
 const size_t CELL_INIT_SIZE = 100;
-const size_t N_CYCLES = 100;
+const size_t N_CYCLES = 1;
 
 #define ERR(func)	do { perror(func); return 1; } while(0)
 const char *strcpy_64(tbl_key_t dst, const char *src, const char *eof);	// compare 64-ltrs words
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 			tbl_cnt_elems(&tbl), tbl_get_ldfactor(&tbl));
 
 	// dumping distribution elements in cells
-	FILE *dump_distr = fopen("distr", "w");	assert(dump_distr);
+	FILE *dump_distr = fopen("distr.csv", "w");	assert(dump_distr);
 	for(size_t i=0; i < tbl.size; i++)
 		fprintf(dump_distr, "%lu\n", tbl.cells[i].size);
 	fclose(dump_distr);	dump_distr = NULL;
@@ -66,7 +66,10 @@ int main(int argc, char *argv[])
 		for(size_t i=0; i<N_CYCLES; i++)
 			test(added_keys, n_added_keys, &tbl);
 		time = __rdtsc()-time;
-		printf("testing finished: %lu clocks\n", time);
+
+		FILE *dump_clocks = fopen("clocks.csv", "a");	assert(dump_clocks);
+		fprintf(dump_clocks, "%lu\n", time);
+		fclose(dump_clocks);	dump_clocks = NULL;
 	}
 
 	// deinit
@@ -106,12 +109,12 @@ const char *strcpy_64(tbl_key_t dst, const char *src, const char *eof)
 {
 	assert(dst);	assert(src);	assert(eof);
 
-	while(src < eof && !isalnum(*src))
+	while(src < eof && isspace(*src))
 		src++;
 	if(src >= eof)	return NULL;
 
 	const char *const src_beg = src;
-	while(src-src_beg < MAX_S_LEN-1 && isalnum(*src) && src < eof)
+	while(src-src_beg < MAX_S_LEN-1 && !isspace(*src) && src < eof)
 		*dst++ = *src++;
 	*dst = '\0';
 
