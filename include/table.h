@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <x86intrin.h>
+#include <immintrin.h>
 #include <errno.h>
 
 #define MAX_S_LEN 64

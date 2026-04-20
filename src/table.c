@@ -1,7 +1,23 @@
 #include "table.h"
+#include <immintrin.h>
 
 static void cell_init(tbl_cell_t *cell, const size_t cell_capacity);
 static void cell_realloc(tbl_cell_t *cell);
+static int key_cmp(const tbl_key_t key1, const tbl_key_t key2)
+{
+	assert(key1);	assert(key2);
+
+	__m256i low1 = _mm256_lddqu_si256((const __m256i *)key1);
+	__m256i hi1 = _mm256_lddqu_si256((const __m256i *)((uint64_t)key1 + 32));
+	__m256i low2 = _mm256_lddqu_si256((const __m256i *)key2);
+	__m256i hi2 = _mm256_lddqu_si256((const __m256i *)((uint64_t)key2 + 32));
+
+	__m256i cmp_low = _mm256_sub_epi8(low1, low2);
+	__m256i cmp_hi = _mm256_sub_epi8(hi1, hi2);
+	__m256i cmp = _mm256_or_si256(cmp_low, cmp_hi);
+
+	return !_mm256_testz_si256(cmp, cmp);
+}
 
 void tbl_init(const size_t tbl_size, const size_t cell_capacity, tbl_t *tbl)
 {
@@ -75,7 +91,7 @@ void tbl_add(const tbl_key_t key, tbl_t *tbl)
 	{
 		added = cell->next[added];
 
-		if(cell->hashes[added] == hash && !strcmp(cell->keys[added], key))
+		if(cell->hashes[added] == hash && !key_cmp(cell->keys[added], key))
 		{
 			cell->data[added]++;
 			return;
@@ -138,7 +154,7 @@ tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl)
 	do
 	{
 		idx = cell->next[idx];
-		if(cell->hashes[idx] == hash && !strcmp(cell->keys[idx], key))
+		if(cell->hashes[idx] == hash && !key_cmp(cell->keys[idx], key))
 			return cell->data[idx];
 	}
 	while(idx != cell->tail);
