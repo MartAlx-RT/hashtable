@@ -154,7 +154,7 @@ tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(cons
 	do
 	{
 		idx = cell->next[idx];
-		if(cell->hashes[idx] == hash && !key_cmp(cell->keys[idx], key))
+		if(!strcmp(cell->keys[idx], key))
 			return cell->data[idx];
 	}
 	while(idx != cell->tail);
