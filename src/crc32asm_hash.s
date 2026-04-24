@@ -1,7 +1,7 @@
-.globl	tbl_hash
+.globl	tbl_crc32asm_hash
 .text
 
-tbl_hash:
+tbl_crc32asm_hash:
 	xorq	%rax, %rax
 	movb	(%rdi), %dl
 	testb	%dl, %dl
@@ -9,8 +9,8 @@ tbl_hash:
 
 	incq	%rdi
 loop:
-	movb	(%rdi), %dl
 	crc32	%dl, %eax	# while([%rdi++] != 0)	%rax = crc32(%rax)
+	movb	(%rdi), %dl
 	incq	%rdi
 	testb	%dl, %dl
 	jnz	loop

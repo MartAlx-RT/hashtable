@@ -36,14 +36,24 @@ typedef struct tbl_t
 	size_t size;
 } tbl_t;
 
-tbl_hash_t tbl_hash(const tbl_key_t key);
 void tbl_init(const size_t tbl_size, const size_t cell_capacity, tbl_t *tbl);
-void tbl_add(const tbl_key_t key, tbl_t *tbl);
+void tbl_add(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t));
 void tbl_deinit(tbl_t *tbl);
-void tbl_del(const tbl_key_t key, tbl_t *tbl);
-tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl);
+void tbl_del(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t));
+tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t));
 size_t tbl_get_size(tbl_t *tbl);
 double tbl_get_ldfactor(tbl_t *tbl);
 void cell_dump(tbl_cell_t *cell, FILE *f);
 void tbl_dump(tbl_t *tbl, FILE *f);
+
+/* hash functions */
+tbl_hash_t tbl_crc32asminline_hash(const tbl_key_t key);
+tbl_hash_t tbl_const_hash(const tbl_key_t key __attribute__((unused)));
+tbl_hash_t tbl_1a_hash(const tbl_key_t key);
+tbl_hash_t tbl_crc32_hash(const tbl_key_t key);
+tbl_hash_t tbl_crc32intrin_hash(const tbl_key_t key);
+tbl_hash_t tbl_len_hash(const tbl_key_t key);
+tbl_hash_t tbl_rol_hash(const tbl_key_t key);
+tbl_hash_t tbl_sum_hash(const tbl_key_t key);
+tbl_hash_t tbl_crc32asm_hash(const tbl_key_t key);
 #endif /*TABLE_H*/

@@ -3,16 +3,14 @@ INC = -Iinclude
 
 CC ?= gcc
 
-HASH_FUNC ?= src/const_hash.c
 TEST_FILE ?= test/test.c
 OUTPUT ?= a.out
 
-FILES = src/table.c $(HASH_FUNC) $(TEST_FILE)
+FILES = src/table.c src/hash_funcs.c src/crc32asm_hash.s $(TEST_FILE)
 
-CFLAGS = -Wall -Wextra -Wpedantic -g -march=native -DNDEBUG
-DEBUG_FLAGS = -fsanitize=address,leak -O0 -g
+CFLAGS = -Wall -Wextra -Wpedantic -g -march=native -DNDEBUG -lm
 CFLAGS += $(INC)
-DEBUG_FLAGS += $(INC)
+DEBUG_FLAGS = $(CFLAGS) -fsanitize=address,leak -O0 -g -lm
 
 all:	debug release
 

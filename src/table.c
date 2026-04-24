@@ -78,9 +78,9 @@ static void cell_realloc(tbl_cell_t *cell)
 		cell->next[i] = i+1;
 }
 
-void tbl_add(const tbl_key_t key, tbl_t *tbl)
+void tbl_add(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t))
 {
-	assert(tbl);
+	assert(tbl);	assert(tbl_hash);
 
 	tbl_hash_t hash = tbl_hash(key);
 	tbl_cell_t *cell = &(tbl->cells[hash % tbl->size]);
@@ -115,9 +115,9 @@ void tbl_add(const tbl_key_t key, tbl_t *tbl)
 	cell->tail = added;
 }
 
-void tbl_del(const tbl_key_t key, tbl_t *tbl)
+void tbl_del(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t))
 {
-	assert(tbl);
+	assert(tbl);	assert(tbl_hash);
 
 	tbl_hash_t hash = tbl_hash(key);
 	tbl_cell_t *cell = &(tbl->cells[hash % tbl->size]);
@@ -143,9 +143,9 @@ void tbl_del(const tbl_key_t key, tbl_t *tbl)
 	errno = ENOKEY;	return;
 }
 
-tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl)
+tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t))
 {
-	assert(tbl);
+	assert(tbl);	assert(tbl_hash);
 
 	tbl_hash_t hash = tbl_hash(key);
 	tbl_cell_t *cell = &(tbl->cells[hash % tbl->size]);
