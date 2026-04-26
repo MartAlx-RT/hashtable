@@ -1,7 +1,9 @@
 *
 !.gitignore
 !makefile
-
+!images
+!images/*
+!readme.md
 !src
 !src/*
 !include
