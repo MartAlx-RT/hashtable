@@ -10,37 +10,37 @@
 ## Измерение коллизий
 
 ### Константная функция
-![Shit](images/tbl_const_hash.pdf "Полнейшее гавно")
+![Shit](images/tbl_const_hash.png "Полнейшее гавно")
 
 ### ASCII первой буквы 
-![Almost-shit](images/tbl_1a_hash.pdf "Почти полное гавно")
+![Almost-shit](images/tbl_1a_hash.png "Почти полное гавно")
 
 ### Длина слова
-![shit](images/tbl_len_hash.pdf "Гавно")
+![shit](images/tbl_len_hash.png "Гавно")
 
 ### Контрольная сумма
 Размер таблицы $\approx 400$
-![Hz](images/tbl_sum_hash1.pdf "Сойдет")
+![Hz](images/tbl_sum_hash1.png "Сойдет")
 
 Размер таблицы $\approx 4000$
-![Hz](images/tbl_sum_hash.pdf "Сойдет")
+![Hz](images/tbl_sum_hash.png "Сойдет")
 
 ### ROL-XOR
-![Great](images/tbl_rol_hash.pdf "Ахуенно")
+![Great](images/tbl_rol_hash.png "Ахуенно")
 
 ### CRC32
-![Ok](images/tbl_crc32_hash.pdf "Норм")
+![Ok](images/tbl_crc32_hash.png "Норм")
 
 ## Выводы
 ## Общая картина
 Как и ожидалось, за счёт огромного количества коллизий, 
 "вне конкуренции" по времени работы оказались *константная,
 равная коду первого символа, равная длине строке хэш-функции*.
-![Summary](images/clocks1.pdf "Такты, затраченные на выполнение теста")
+![Summary](images/clocks1.png "Такты, затраченные на выполнение теста")
 
 ## Детали
 Рассмотрим полсдение три хэш-функции боле подробно.
-![Summary](images/clocks2.pdf "Такты, затраченные на выполнение теста")
+![Summary](images/clocks2.png "Такты, затраченные на выполнение теста")
 
 Как видно у контрольной суммы, уже на размерах порядка
 $10^3$ *становится заметным пик*, отвечающий
