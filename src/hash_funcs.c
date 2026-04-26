@@ -107,7 +107,7 @@ tbl_hash_t tbl_crc32intrin_hash(const tbl_key_t key)
 	return ~hash;
 }
 
-tbl_hash_t tbl_crc32intrin64_hash(const tbl_key_t key)
+tbl_hash_t _tbl_crc32intrin64_hash(const tbl_key_t key)
 {
 	assert(key);
 

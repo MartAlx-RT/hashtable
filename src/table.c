@@ -3,6 +3,22 @@
 #include <stdint.h>
 #include <string.h>
 
+static tbl_hash_t tbl_hash(const tbl_key_t key)
+{
+	assert(key);
+
+	uint64_t hash = 0xFFFFFFFF;
+
+	do
+	{
+		hash = _mm_crc32_u64(hash, *(uint64_t *)key);
+		key += 8;
+	}
+	while(*(key-1));
+
+	return ~hash;
+}
+
 static int key_cmp(const tbl_key_t key1, const tbl_key_t key2)
 {
 	assert(key1);	assert(key2);
@@ -105,9 +121,9 @@ static void cell_realloc(tbl_cell_t *cell)
 		cell->next[i] = i+1;
 }
 
-void tbl_add(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t))
+void tbl_add(const tbl_key_t key, tbl_t *tbl)
 {
-	assert(tbl);	assert(tbl_hash);
+	assert(tbl);
 
 	tbl_hash_t hash = tbl_hash(key);
 	tbl_cell_t *cell = &(tbl->cells[hash % tbl->size]);
@@ -142,9 +158,9 @@ void tbl_add(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_k
 	cell->tail = added;
 }
 
-void tbl_del(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t))
+void tbl_del(const tbl_key_t key, tbl_t *tbl)
 {
-	assert(tbl);	assert(tbl_hash);
+	assert(tbl);
 
 	tbl_hash_t hash = tbl_hash(key);
 	tbl_cell_t *cell = &(tbl->cells[hash % tbl->size]);
@@ -170,7 +186,7 @@ void tbl_del(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_k
 	errno = ENOKEY;	return;
 }
 
-tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t))
+tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl)
 {
 	assert(tbl);	assert(tbl_hash);
 
