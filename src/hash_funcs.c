@@ -61,7 +61,7 @@ tbl_hash_t tbl_crc32asminline_hash(const tbl_key_t key)
 {
 	assert(key);
 
-	uint32_t hash = 0;
+	uint32_t hash = 0xFFFFFFFF;
 
 	size_t i = 0;
 	while(key[i])
@@ -103,6 +103,22 @@ tbl_hash_t tbl_crc32intrin_hash(const tbl_key_t key)
 
 	size_t i = 0;
 	while(key[i])	hash = _mm_crc32_u8(hash, key[i++]);
+
+	return ~hash;
+}
+
+tbl_hash_t tbl_crc32intrin64_hash(const tbl_key_t key)
+{
+	assert(key);
+
+	uint64_t hash = 0xFFFFFFFF;
+
+	do
+	{
+		hash = _mm_crc32_u64(hash, *(uint64_t *)key);
+		key += 8;
+	}
+	while(*(key-1));
 
 	return ~hash;
 }

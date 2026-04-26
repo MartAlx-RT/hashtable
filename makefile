@@ -6,7 +6,7 @@ CC ?= gcc
 TEST_FILE ?= test/test.c
 OUTPUT ?= a.out
 
-FILES = src/table.c src/hash_funcs.c src/crc32asm_hash.s $(TEST_FILE)
+FILES = src/table.c src/hash_funcs.c src/crc32asm_hash.s src/key_cmp.s $(TEST_FILE)
 
 CFLAGS = -Wall -Wextra -Wpedantic -g -march=native -DNDEBUG -lm
 CFLAGS += $(INC)

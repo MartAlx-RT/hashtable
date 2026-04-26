@@ -56,4 +56,7 @@ tbl_hash_t tbl_len_hash(const tbl_key_t key);
 tbl_hash_t tbl_rol_hash(const tbl_key_t key);
 tbl_hash_t tbl_sum_hash(const tbl_key_t key);
 tbl_hash_t tbl_crc32asm_hash(const tbl_key_t key);
+tbl_hash_t tbl_crc32intrin64_hash(const tbl_key_t key);
+
+//int key_cmp(const tbl_key_t key1, const tbl_key_t key2);	// declared in src/key_cmp.s
 #endif /*TABLE_H*/

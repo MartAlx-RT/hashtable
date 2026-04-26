@@ -13,19 +13,19 @@ typedef enum cli_mode_t
 	MODE_HELP = '\n',
 } cli_mode_t;
 
-const size_t TBL_SIZE = 3999;
+const size_t TBL_SIZE = 4001;
 const size_t CELL_INIT_SIZE = 100;
 
 #define ERR(func)	do { perror(func); return 1; } while(0)
 void cli(tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t));
 void load_db(const char *f, const char *eof, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t));
 const char *strcpy_64(tbl_key_t dst, const char *src, const char *eof);
-tbl_hash_t (*const tbl_hash)(const tbl_key_t) = tbl_crc32intrin_hash;
+tbl_hash_t (*const tbl_hash)(const tbl_key_t) = tbl_crc32intrin64_hash;
 
 int main(void)
 {
 	// opening
-	int fd = open("search.txt", O_RDONLY);
+	int fd = open("test.txt", O_RDONLY);
 	if(fd < 0)	ERR("open");
 	struct stat finfo = {};	fstat(fd, &finfo);
 

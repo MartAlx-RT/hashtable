@@ -9,25 +9,18 @@
 #include <ctype.h>
 #include <math.h>
 
-const size_t TBL_SIZE = 3999;
+const size_t TBL_SIZE = 4001;
 const size_t CELL_INIT_SIZE = 100;
-const size_t N_TESTS = 10;
+const size_t N_TESTS = 500;
 
 #define SQ(x)		((x)*(x))
 #define ERR(func)	do { perror(func); return 1; } while(0)
 const char *strcpy_64(tbl_key_t dst, const char *src, const char *eof);	// compare 64-ltrs words
 size_t load_db(const char *f, const char *eof, tbl_t *tbl, tbl_key_t *added_keys[], tbl_hash_t (*tbl_hash)(const tbl_key_t));
-void test(tbl_key_t keys[], size_t n_keys, tbl_t *tbl);	// auto-test (searching all words in file)
 void search_test(const tbl_key_t srch_keys[], const size_t n_srch_keys, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t));
 
-// Change names when you change func ptrs array!
 static tbl_hash_t (*const TBL_HASH_FUNCS[])(const tbl_key_t) =
-{ tbl_const_hash, tbl_1a_hash, tbl_sum_hash, tbl_rol_hash,
-	tbl_crc32_hash, tbl_crc32asm_hash, tbl_crc32intrin_hash, tbl_crc32asminline_hash, tbl_len_hash };
-
-static const char *TBL_HASH_NAMES[] = 
-{ "tbl_const_hash", "tbl_1a_hash", "tbl_sum_hash",  "tbl_rol_hash",
-	"tbl_crc32_hash", "tbl_crc32asm_hash", "tbl_crc32intrin_hash", "tbl_crc32asminline_hash", "tbl_len_hash" };
+{ tbl_crc32intrin64_hash };
 
 int main(void)
 {
@@ -48,8 +41,9 @@ int main(void)
 		// loading database
 		tbl_key_t *added_keys = NULL;
 		size_t n_added_keys = load_db(f, f+finfo.st_size, &tbl, &added_keys, TBL_HASH_FUNCS[func]);
+//		fprintf(stderr, "ld factor = %lg\n", tbl_get_ldfactor(&tbl));
 
-		fprintf(stderr, "`%s`:\t", TBL_HASH_NAMES[func]);
+//		fprintf(stderr, "`%s`:\t", TBL_HASH_NAMES[func]);
 		search_test(added_keys, n_added_keys, &tbl, TBL_HASH_FUNCS[func]);
 
 		// deinit
@@ -57,7 +51,6 @@ int main(void)
 		free(added_keys);
 	}
 
-	perror("What happened?");
 	if(munmap((void *)f, finfo.st_size))	ERR("munmap");
 	return 0;
 }
@@ -130,7 +123,10 @@ void search_test(const tbl_key_t srch_keys[], const size_t n_srch_keys, tbl_t *t
 		sum_time += (double)time;	sum_time2 += SQ((double)time);
 	}
 
-	fprintf(stderr, "function spent:\t(%lg +- %lg) clocks\n",
-			sum_time/N_TESTS,
-			sqrt(sum_time2/N_TESTS - SQ(sum_time/N_TESTS)));
+//	fprintf(stderr, "function spent:\t(%lg +- %lg) clocks\n",
+//			sum_time/N_TESTS,
+//			sqrt(sum_time2/N_TESTS - SQ(sum_time/N_TESTS)));
+	fprintf(stderr, "%lg,%lg\n",
+			1e-8*sum_time/N_TESTS,
+			1e-8*sqrt(sum_time2/N_TESTS - SQ(sum_time/N_TESTS)));
 }

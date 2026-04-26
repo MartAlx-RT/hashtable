@@ -1,40 +1,49 @@
 #include "table.h"
 #include <immintrin.h>
+#include <stdint.h>
+#include <string.h>
 
-static void cell_init(tbl_cell_t *cell, const size_t cell_capacity);
-static void cell_realloc(tbl_cell_t *cell);
 static int key_cmp(const tbl_key_t key1, const tbl_key_t key2)
 {
 	assert(key1);	assert(key2);
 
-	__m256i low1 = _mm256_lddqu_si256((const __m256i *)key1);
-	__m256i hi1 = _mm256_lddqu_si256((const __m256i *)((uint64_t)key1 + 32));
-	__m256i low2 = _mm256_lddqu_si256((const __m256i *)key2);
-	__m256i hi2 = _mm256_lddqu_si256((const __m256i *)((uint64_t)key2 + 32));
+	uint8_t retval = 0;
 
-	__m256i cmp_low = _mm256_sub_epi8(low1, low2);
-	__m256i cmp_hi = _mm256_sub_epi8(hi1, hi2);
-	__m256i cmp = _mm256_or_si256(cmp_low, cmp_hi);
+	// %rdi - 1
+	// %rsi - 2
+	// retval - 0
+	asm volatile(
+		"vlddqu	(%1), %%ymm0		\n"
+		"vlddqu	(%2), %%ymm1		\n"
+		"vpsubb	%%ymm1, %%ymm0, %%ymm0	\n"
+		"vptest	%%ymm0, %%ymm0		\n"
+		"jnz	exit%=			\n"
 
-	return !_mm256_testz_si256(cmp, cmp);
+		"vlddqu	32(%1), %%ymm0		\n"
+		"vlddqu	32(%2), %%ymm1		\n"
+		"vpsubb	%%ymm1, %%ymm0, %%ymm0	\n"
+		"vptest	%%ymm0, %%ymm0		\n"
+
+	"exit%=:				\n"
+		"setnz	%0			\n"
+		: "=r" (retval)				// output
+		: "r" (key1), "r" (key2)		// input
+		: "%ymm0", "%ymm1");			// destr list
+
+	return retval;
 }
 
-void tbl_init(const size_t tbl_size, const size_t cell_capacity, tbl_t *tbl)
+__attribute__((unused)) static int _key_cmp(const tbl_key_t key1, const tbl_key_t key2)
 {
-	assert(tbl);
+	__m256i low1 = _mm256_lddqu_si256((const __m256i *)key1);
+	__m256i low2 = _mm256_lddqu_si256((const __m256i *)key2);
+	__m256i cmp = _mm256_sub_epi8(low1, low2);
+	if(!_mm256_testz_si256(cmp, cmp))	return 1;
 
-	if(tbl_size == 0)
-	{
-		errno = EINVAL;	fprintf(stderr, "init table with 0 size\n");
-		return;
-	}
-
-	tbl->size = tbl_size;
-	tbl->cells = (tbl_cell_t *)calloc(tbl->size, sizeof(tbl_cell_t));
-	assert(tbl->cells);
-
-	for(size_t i=0; i<tbl->size; i++)
-		cell_init(&(tbl->cells[i]), cell_capacity);
+	__m256i hi1 = _mm256_lddqu_si256((const __m256i *)((uint64_t)key1 + 32));
+	__m256i hi2 = _mm256_lddqu_si256((const __m256i *)((uint64_t)key2 + 32));
+	cmp = _mm256_sub_epi8(hi1, hi2);
+	return !_mm256_testz_si256(cmp, cmp);
 }
 
 static void cell_init(tbl_cell_t *cell, const size_t cell_capacity)
@@ -56,6 +65,24 @@ static void cell_init(tbl_cell_t *cell, const size_t cell_capacity)
 	cell->free = 1;
 	cell->size = 0;
 	cell->capacity = cell_capacity;
+}
+
+void tbl_init(const size_t tbl_size, const size_t cell_capacity, tbl_t *tbl)
+{
+	assert(tbl);
+
+	if(tbl_size == 0)
+	{
+		errno = EINVAL;	fprintf(stderr, "init table with 0 size\n");
+		return;
+	}
+
+	tbl->size = tbl_size;
+	tbl->cells = (tbl_cell_t *)calloc(tbl->size, sizeof(tbl_cell_t));
+	assert(tbl->cells);
+
+	for(size_t i=0; i<tbl->size; i++)
+		cell_init(&(tbl->cells[i]), cell_capacity);
 }
 
 static void cell_realloc(tbl_cell_t *cell)
@@ -128,7 +155,7 @@ void tbl_del(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_k
 		previous = deleted;
 		deleted = cell->next[deleted];
 
-		if(cell->hashes[deleted] == hash && !strcmp(cell->keys[deleted], key))
+		if(cell->hashes[deleted] == hash && !key_cmp(cell->keys[deleted], key))
 		{
 			cell->next[previous] = cell->next[deleted];
 			cell->next[deleted] = cell->free;
@@ -154,7 +181,7 @@ tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl, tbl_hash_t (*tbl_hash)(cons
 	do
 	{
 		idx = cell->next[idx];
-		if(!strcmp(cell->keys[idx], key))
+		if(cell->hashes[idx] == hash && !key_cmp(cell->keys[idx], key))
 			return cell->data[idx];
 	}
 	while(idx != cell->tail);
