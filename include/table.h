@@ -17,6 +17,7 @@ static const uint64_t UNDEF = (uint64_t)-1;
 typedef size_t tbl_data_t;
 typedef char tbl_key_t[MAX_S_LEN];
 typedef uint64_t tbl_hash_t;
+typedef tbl_hash_t (*tbl_hash_func_t)(const tbl_key_t);
 
 typedef struct tbl_cell_t
 {
@@ -33,10 +34,12 @@ typedef struct tbl_cell_t
 typedef struct tbl_t
 {
 	tbl_cell_t *cells;
+	tbl_hash_func_t hash_func;
 	size_t size;
 } tbl_t;
 
 void tbl_init(const size_t tbl_size, const size_t cell_capacity, tbl_t *tbl);
+void tbl_set_hash(tbl_hash_func_t hash_func, tbl_t *tbl);
 void tbl_add(const tbl_key_t key, tbl_t *tbl);
 void tbl_deinit(tbl_t *tbl);
 void tbl_del(const tbl_key_t key, tbl_t *tbl);

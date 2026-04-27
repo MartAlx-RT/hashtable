@@ -121,6 +121,13 @@ static void cell_realloc(tbl_cell_t *cell)
 		cell->next[i] = i+1;
 }
 
+void tbl_set_hash(tbl_hash_func_t hash_func, tbl_t *tbl)
+{
+	assert(hash_func);	assert(tbl);
+
+	tbl->hash_func = hash_func;
+}
+
 void tbl_add(const tbl_key_t key, tbl_t *tbl)
 {
 	assert(tbl);
