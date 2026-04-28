@@ -87,6 +87,8 @@ tbl_hash_t tbl_1a_hash(const tbl_key_t key)
 
 tbl_hash_t tbl_crc32_hash(const tbl_key_t key)
 {
+	assert(key);
+
 	uint32_t hash = 0xFFFFFFFF;
 
 	while(*key)
@@ -160,3 +162,20 @@ tbl_hash_t tbl_sum_hash(const tbl_key_t key)
 
 	return hash;
 }
+
+tbl_hash_t tbl_crc32intrin64_uroll(const tbl_key_t key)
+{
+	assert(key);
+
+	uint64_t hash = 0xFFFFFFFF;
+
+	do
+	{
+		hash = _mm_crc32_u64(hash, *(uint64_t *)key);
+		key += 8;
+	}
+	while(*(key-1));
+
+	return ~hash;
+}
+

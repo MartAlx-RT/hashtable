@@ -3,22 +3,6 @@
 #include <stdint.h>
 #include <string.h>
 
-static tbl_hash_t tbl_hash(const tbl_key_t key)
-{
-	assert(key);
-
-	uint64_t hash = 0xFFFFFFFF;
-
-	do
-	{
-		hash = _mm_crc32_u64(hash, *(uint64_t *)key);
-		key += 8;
-	}
-	while(*(key-1));
-
-	return ~hash;
-}
-
 static int key_cmp(const tbl_key_t key1, const tbl_key_t key2)
 {
 	assert(key1);	assert(key2);
@@ -83,9 +67,9 @@ static void cell_init(tbl_cell_t *cell, const size_t cell_capacity)
 	cell->capacity = cell_capacity;
 }
 
-void tbl_init(const size_t tbl_size, const size_t cell_capacity, tbl_t *tbl)
+void tbl_init(const size_t tbl_size, const size_t cell_capacity, tbl_hash_func_t hash_func, tbl_t *tbl)
 {
-	assert(tbl);
+	assert(tbl);	assert(hash_func);
 
 	if(tbl_size == 0)
 	{
@@ -93,6 +77,7 @@ void tbl_init(const size_t tbl_size, const size_t cell_capacity, tbl_t *tbl)
 		return;
 	}
 
+	tbl->hash_func = hash_func;
 	tbl->size = tbl_size;
 	tbl->cells = (tbl_cell_t *)calloc(tbl->size, sizeof(tbl_cell_t));
 	assert(tbl->cells);
@@ -121,18 +106,11 @@ static void cell_realloc(tbl_cell_t *cell)
 		cell->next[i] = i+1;
 }
 
-void tbl_set_hash(tbl_hash_func_t hash_func, tbl_t *tbl)
-{
-	assert(hash_func);	assert(tbl);
-
-	tbl->hash_func = hash_func;
-}
-
 void tbl_add(const tbl_key_t key, tbl_t *tbl)
 {
 	assert(tbl);
 
-	tbl_hash_t hash = tbl_hash(key);
+	tbl_hash_t hash = tbl->hash_func(key);
 	tbl_cell_t *cell = &(tbl->cells[hash % tbl->size]);
 	uint64_t added = 0;
 
@@ -169,7 +147,7 @@ void tbl_del(const tbl_key_t key, tbl_t *tbl)
 {
 	assert(tbl);
 
-	tbl_hash_t hash = tbl_hash(key);
+	tbl_hash_t hash = tbl->hash_func(key);
 	tbl_cell_t *cell = &(tbl->cells[hash % tbl->size]);
 	uint64_t deleted = 0, previous = 0;
 
@@ -195,9 +173,9 @@ void tbl_del(const tbl_key_t key, tbl_t *tbl)
 
 tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl)
 {
-	assert(tbl);	assert(tbl_hash);
+	assert(tbl);	assert(tbl->hash_func);
 
-	tbl_hash_t hash = tbl_hash(key);
+	tbl_hash_t hash = tbl->hash_func(key);
 	tbl_cell_t *cell = &(tbl->cells[hash % tbl->size]);
 	uint64_t idx = 0;
 

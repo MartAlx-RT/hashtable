@@ -1,4 +1,5 @@
 #include "table.h"
+#include "hash_funcs.h"
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -17,10 +18,11 @@ const size_t TBL_SIZE = 4001;
 const size_t CELL_INIT_SIZE = 100;
 
 #define ERR(func)	do { perror(func); return 1; } while(0)
-void cli(tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t));
-void load_db(const char *f, const char *eof, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t));
+void cli(tbl_t *tbl);
+void load_db(const char *f, const char *eof, tbl_t *tbl);
 const char *strcpy_64(tbl_key_t dst, const char *src, const char *eof);
-tbl_hash_t (*const tbl_hash)(const tbl_key_t) = tbl_crc32intrin64_hash;
+
+const tbl_hash_func_t hash_func = tbl_crc32_hash;	// your function
 
 int main(void)
 {
@@ -33,19 +35,19 @@ int main(void)
 	if(f == NULL)	ERR("mmap");
 
 	tbl_t tbl = {};
-	tbl_init(TBL_SIZE, CELL_INIT_SIZE, &tbl);
+	tbl_init(TBL_SIZE, CELL_INIT_SIZE, hash_func, &tbl);
 
 	// loading database
-	load_db(f, f+finfo.st_size, &tbl, tbl_hash);
+	load_db(f, f+finfo.st_size, &tbl);
 	printf("load factor: %lg\n", tbl_get_ldfactor(&tbl));
-	cli(&tbl, tbl_hash);
+	cli(&tbl);
 
 	return 0;
 }
 
-void cli(tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t))
+void cli(tbl_t *tbl)
 {
-	assert(tbl);	assert(tbl_hash);
+	assert(tbl);
 
 	cli_mode_t mode = MODE_QUIT;
 	tbl_key_t key = "";
@@ -66,19 +68,19 @@ void cli(tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t))
 			case MODE_ADD:
 				printf("(key)>");
 				scanf("%63s", key);
-				tbl_add(key, tbl, tbl_hash);
+				tbl_add(key, tbl);
 				break;
 			case MODE_DEL:
 				printf("(key)>");
 				scanf("%63s", key);
 
-				tbl_del(key, tbl, tbl_hash);
+				tbl_del(key, tbl);
 				break;
 			case MODE_FIND:
 				printf("(key)>");
 				scanf("%63s", key);
 
-				data = tbl_find(key, tbl, tbl_hash);
+				data = tbl_find(key, tbl);
 				if(!errno)	printf("`%s`: %lu\n", key, data);
 				break;
 			default:
@@ -92,14 +94,14 @@ void cli(tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t))
 	}
 }
 
-void load_db(const char *f, const char *eof, tbl_t *tbl, tbl_hash_t (*tbl_hash)(const tbl_key_t))
+void load_db(const char *f, const char *eof, tbl_t *tbl)
 {
-	assert(f);	assert(tbl);	assert(tbl_hash);
+	assert(f);	assert(tbl);
 
 	tbl_key_t key = "";
 
 	while((f = strcpy_64(key, f, eof)))
-		tbl_add(key, tbl, tbl_hash);
+		tbl_add(key, tbl);
 }
 
 const char *strcpy_64(tbl_key_t dst, const char *src, const char *eof)
@@ -120,4 +122,3 @@ const char *strcpy_64(tbl_key_t dst, const char *src, const char *eof)
 	if(src >= eof)	return NULL;
 	return src+1;
 }
-
