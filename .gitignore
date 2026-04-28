@@ -1,10 +1,13 @@
 *
 !.gitignore
 !makefile
-!images
-!images/*
-!readme.md
+
 !src
 !src/*
 !include
 !include/*
+
+!report
+!report/*
+!report/images
+!report/images/*
