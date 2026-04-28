@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 
-static int key_cmp(const tbl_key_t key1, const tbl_key_t key2)
+__attribute__((unused)) static int _key_cmp(const tbl_key_t key1, const tbl_key_t key2)
 {
 	assert(key1);	assert(key2);
 
@@ -33,7 +33,7 @@ static int key_cmp(const tbl_key_t key1, const tbl_key_t key2)
 	return retval;
 }
 
-__attribute__((unused)) static int _key_cmp(const tbl_key_t key1, const tbl_key_t key2)
+static int key_cmp(const tbl_key_t key1, const tbl_key_t key2)
 {
 	__m256i low1 = _mm256_lddqu_si256((const __m256i *)key1);
 	__m256i low2 = _mm256_lddqu_si256((const __m256i *)key2);
@@ -182,7 +182,7 @@ tbl_data_t tbl_find(const tbl_key_t key, tbl_t *tbl)
 	do
 	{
 		idx = cell->next[idx];
-		if(cell->hashes[idx] == hash && !key_cmp(cell->keys[idx], key))
+		if(cell->hashes[idx] == hash && !strcmp(cell->keys[idx], key))
 			return cell->data[idx];
 	}
 	while(idx != cell->tail);
