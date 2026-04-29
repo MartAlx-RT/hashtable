@@ -15,13 +15,13 @@
 #define HASH_FUNC_INIT(f, s, n)	{ .func = f, .name = #f, .TBL_SIZE = s, .N_CYCLES = n }
 static const tbl_test_t TBL_TESTS[] =
 {
-//	HASH_FUNC_INIT(tbl_const_hash, 4001, 2),
-//	HASH_FUNC_INIT(tbl_1a_hash, 4001, 2),
-//	HASH_FUNC_INIT(tbl_len_hash, 4001, 2),
+	HASH_FUNC_INIT(tbl_const_hash, 4001, 2),
+	HASH_FUNC_INIT(tbl_1a_hash, 4001, 2),
+	HASH_FUNC_INIT(tbl_len_hash, 4001, 2),
 //	HASH_FUNC_INIT(tbl_sum_hash, 4001, 500),
 //	HASH_FUNC_INIT(tbl_sum_hash, 401, 500),
 //	HASH_FUNC_INIT(tbl_rol_hash, 4001, 500),
-	HASH_FUNC_INIT(tbl_crc32_hash, 4001, 500),
+//	HASH_FUNC_INIT(tbl_crc32_hash, 4001, 500),
 //	HASH_FUNC_INIT(tbl_crc32asm_hash, 4001, 500),
 //	HASH_FUNC_INIT(tbl_crc32intrin_hash, 4001, 500),
 //	HASH_FUNC_INIT(tbl_crc32asminline_hash, 4001, 500)
@@ -112,7 +112,7 @@ void srch_test(const char *f, const char *eof)
 #ifdef TBL_TEST_HASH
 		printf(":%s\n", TBL_TESTS[test].name);
 		for(size_t i = 0; i < tbl.size; i++)
-			printf("%s,%lu\n", tbl.cells[i].size);
+			printf("%lu\n", tbl.cells[i].size);
 #else
 		for(size_t cycle = 0; cycle < TBL_TESTS[test].N_CYCLES; cycle++)
 		{
